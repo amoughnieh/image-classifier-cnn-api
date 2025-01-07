@@ -1,0 +1,11 @@
+channels:
+- conda-forge
+dependencies:
+- python=3.11.11
+- pip<=24.2
+- pip:
+  - mlflow==2.19.0
+  - --extra-index-url https://download.pytorch.org/whl/cpu
+  - torch==2.5.1
+  - torchvision==0.20.1
+name: mlflow-env

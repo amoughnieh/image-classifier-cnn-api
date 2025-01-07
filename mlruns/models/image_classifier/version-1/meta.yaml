@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1735863958616
+current_stage: None
+description: null
+last_updated_timestamp: 1735863958616
+name: image_classifier
+run_id: c1f069a312944754a596728aca54f67c
+run_link: null
+source: file:///C:/Users/Ali/OneDrive%20-%20Georgia%20Institute%20of%20Technology/_Projects/9.%20Image%20Classifier%20MLOps/mlruns/0/c1f069a312944754a596728aca54f67c/artifacts/model
+status: READY
+status_message: null
+storage_location: file:///C:/Users/Ali/OneDrive%20-%20Georgia%20Institute%20of%20Technology/_Projects/9.%20Image%20Classifier%20MLOps/mlruns/0/c1f069a312944754a596728aca54f67c/artifacts/model
+user_id: null
+version: 1

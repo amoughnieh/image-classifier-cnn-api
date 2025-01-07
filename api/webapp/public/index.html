@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Classifier</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            white-space: pre-wrap;
+            text-align: center;
+        }
+        .preview-container {
+            margin-top: 20px;
+            max-width: 300px;
+        }
+        #imagePreview {
+            max-width: 200px;
+            display: none;
+            object-fit: contain;
+            border: 1px solid #ccc;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+        .upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .custom-button {
+            display: inline-block;
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .custom-button:hover {
+            background-color: #0056b3;
+        }
+        #fileName {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #555;
+            text-align: center;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        p {
+            text-align: center;
+        }
+        p.small-font {
+            font-size: 12px;
+            margin-bottom: 0;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        .project-info {
+            text-align: left;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Classifier</h1>
+    <p>This classifier predicts images of Cars, Planes, and Ships. If you upload an image of a Dog, it will do its best to classify it as a Car, a Plane, or a Ship. Use it at your own risk!</p>
+    <p class="small-font">Supported files: JPEG and PNG. - Maximum file size: 10MB.</p>
+
+    <div class="upload-container">
+        <label for="imageUpload" class="custom-button">Upload Image</label>
+        <input type="file" id="imageUpload" accept="image/jpeg,image/png">
+        <div id="fileName"></div>
+        <img id="imagePreview" alt="Image Preview">
+    </div>
+
+    <button id="predictButton" class="custom-button">Predict</button>
+
+    <div class="loading" id="loading">Processing...</div>
+    <div id="result"></div>
+
+    <h2 class="project-info">More about the project..</h2>
+    <p class="project-info"><b>06 Jan 2025 - v1.0</b> - First deployment.</p>
+    <p class="project-info">This model was trained and tested on a dataset of 885 images scraped from the web. The final f1-score on the test set is 78.8%. Key features:</p>
+    <ul class="project-info">
+        <li>Convolutional Neural Network (CNN)</li>
+        <li>Bayesian optimization for tuning learning rate, weight decay, and epochs</li>
+        <li>5-fold cross-validation</li>
+        <li>Experiment tracking with MLflow</li>
+        <li>Model deployment using FastAPI</li>
+        <li>Dockerized API and deployed to GCP</li>
+        <li>Web app with a simple interface connected to the cloud model</li>
+    </ul>
+    <p class="project-info">The main goal of this project was to deploy a fully functional predictive model to the cloud, rather than focusing on 
+        optimizing its performance. Now that the deployment is complete, there is room to improve the model further.</p>
+
+    <script>
+        const apiUrl = 'https://image-classifier-docker-182264490387.us-central1.run.app/predict';
+        const maxFileSize = 10 * 1024 * 1024; // 10MB
+
+        const imageUpload = document.getElementById('imageUpload');
+        const fileNameDiv = document.getElementById('fileName');
+        const imagePreview = document.getElementById('imagePreview');
+
+        function showError(message) {
+            const result = document.getElementById('result');
+            result.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function isValidFileType(file) {
+            return ['image/jpeg', 'image/png'].includes(file.type);
+        }
+
+        imageUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                if (!isValidFileType(file)) {
+                    showError('Please select a valid image file (JPEG or PNG)');
+                    imagePreview.style.display = 'none';
+                    fileNameDiv.textContent = '';
+                    return;
+                }
+
+                if (file.size > maxFileSize) {
+                    showError('File size too large. Maximum size is 10MB');
+                    imagePreview.style.display = 'none';
+                    fileNameDiv.textContent = '';
+                    return;
+                }
+
+                fileNameDiv.textContent = `Selected file: ${file.name}`;
+                imagePreview.src = URL.createObjectURL(file);
+                imagePreview.style.display = 'block';
+            } else {
+                imagePreview.style.display = 'none';
+                fileNameDiv.textContent = '';
+            }
+        });
+
+        document.getElementById('predictButton').addEventListener('click', async () => {
+            const file = imageUpload.files[0];
+            const predictButton = document.getElementById('predictButton');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+
+            if (!file) {
+                showError('Please select an image.');
+                return;
+            }
+
+            if (!isValidFileType(file)) {
+                showError('Please select a valid image file (JPEG or PNG)');
+                return;
+            }
+
+            if (file.size > maxFileSize) {
+                showError('File size too large. Maximum size is 10MB');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                predictButton.disabled = true;
+                loading.style.display = 'block';
+                result.textContent = '';
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error: ${response.status} - ${errorText}`);
+                }
+
+                const data = await response.json();
+                const predictedClass = data['Predicted Class'];
+
+                // Mapping classes to emojis
+                const emojiMap = {
+                    'Car': '🚗',
+                    'Plane': '✈️',
+                    'Ship': '🚤'
+                };
+
+                const emoji = emojiMap[predictedClass] || '';
+                result.textContent = `Predicted object: ${predictedClass} ${emoji}\nPrediction certainty: ${data['Certainty']}`;
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`Error: ${error.message}`);
+            } finally {
+                predictButton.disabled = false;
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

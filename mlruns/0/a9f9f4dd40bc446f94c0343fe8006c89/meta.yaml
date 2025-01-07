@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Ali/OneDrive%20-%20Georgia%20Institute%20of%20Technology/_Projects/9.%20Image%20Classifier%20MLOps/mlruns/0/a9f9f4dd40bc446f94c0343fe8006c89/artifacts
+end_time: 1735863867378
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a9f9f4dd40bc446f94c0343fe8006c89
+run_name: capable-auk-759
+run_uuid: a9f9f4dd40bc446f94c0343fe8006c89
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1735863806405
+status: 3
+tags: []
+user_id: Ali

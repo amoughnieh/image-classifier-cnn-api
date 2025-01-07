@@ -1,0 +1,9 @@
+version: '3'
+services:
+  image_classifier:
+    build: .  # Add this to build from Dockerfile
+    image: image_classifier
+    ports:
+      - "${PORT:-8080}:8080" # host port:container port
+    environment:
+      - PORT=${PORT:-8080}  # Explicitly set environment variable
